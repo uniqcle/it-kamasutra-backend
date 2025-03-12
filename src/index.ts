@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 
 import { posts } from "./fake_data/posts";
 
-const app = express();
+export const app = express();
 const port = 3005;
 
 app.use(express.json());
@@ -91,11 +91,9 @@ app.delete("/posts/:id", (req: Request, res: Response) => {
   res.send(404);
 });
 
-
-
-
-
-
+app.delete("/__test__/data", (req: Request, res: Response) => {
+  res.sendStatus(201);
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
