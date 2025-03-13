@@ -1,0 +1,1 @@
+export type PostCreateModel = { title: string; body: string };
