@@ -14,6 +14,7 @@ import {
 import { PostCreateModel } from "./models/PostCreateModel";
 import { GetParamModel } from "./models/GetParamModel";
 import { ViewModel } from "./models/PostViewModel";
+import { getPostViewModel } from "./utils/getPostViewModel";
 
 export const app = express();
 const port = 3005;
@@ -66,10 +67,10 @@ app.get(
   ) => {
     const id = +req.params.id;
 
-    let product = posts.find((p) => p.id == id);
+    let post = posts.find((p) => p.id == id);
 
-    if (product) {
-      res.send(product);
+    if (post) {
+      res.status(200).send(getPostViewModel(post));
     } else {
       res.send(404);
     }
@@ -99,16 +100,7 @@ app.post(
 
     // type PostType на выводе подгоняем под модель PostViewModel,
     // которая предназначена конкретно для вывода
-    res.status(201).json(
-      posts.map((p) => {
-        return {
-          id: p.id,
-          title: p.title,
-          body: p.body,
-          userId: p.userId,
-        };
-      })
-    );
+    res.status(200).json(posts.map(getPostViewModel));
   }
 );
 

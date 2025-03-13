@@ -1,1 +1,6 @@
-export type GetParamModel = { id: string };
+export type GetParamModel = {
+  /**
+   * id запроса
+   */
+  id: string;
+};
