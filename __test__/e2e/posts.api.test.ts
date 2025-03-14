@@ -1,7 +1,7 @@
 import request from "supertest";
-import { app } from "../../src";
+import { app } from "../../src/app";
 import { posts, PostType } from "../../src/fake_data/posts";
-import { ViewModel } from "../../src/models/PostViewModel";
+ 
 
 describe("/posts", () => {
   // it('should return 200 and empty array', () => {
@@ -34,7 +34,7 @@ describe("/posts", () => {
     //   .expect(404, createdPost);
   });
 
-  console.log("Тестирование");
+  // console.log("Тестирование");
 
   // it("sould return 200 and empty array", async () => {
   //   await request(app).get("/posts/23234324").expect(404);
