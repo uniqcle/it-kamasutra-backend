@@ -1,5 +1,5 @@
 import express, { Request, Response, Express } from "express";
-import { PostType, posts } from "../fake_data/posts";
+import { PostType } from "../fake_data/posts";
 import {
   TypedBodyRequest,
   TypedParamsBodyRequest,
@@ -10,6 +10,7 @@ import { PostCreateModel } from "../models/PostCreateModel";
 import { GetParamModel } from "../models/GetParamModel";
 import { ViewModel } from "../models/PostViewModel";
 import { getPostViewModel } from "../utils/getPostViewModel";
+import { postRepository } from "../repositories/post_repos";
 
 export const getPostsRoutes = () => {
   const postRouter = express.Router();
@@ -42,12 +43,9 @@ export const getPostsRoutes = () => {
     (req: TypedQueryRequest<{ title: string }>, res: Response<ViewModel[]>) => {
       const title = req.query.title?.toString();
 
-      if (title) {
-        const filteredPosts = posts.filter((p) => p.title.includes(title));
-        res.send(filteredPosts);
-      } else {
-        res.json(posts);
-      }
+      let filteredPosts = postRepository.filterPost(title);
+
+      res.send(filteredPosts);
     }
   );
 
@@ -60,7 +58,7 @@ export const getPostsRoutes = () => {
     ) => {
       const id = +req.params.id;
 
-      let post = posts.find((p) => p.id == id);
+      let post: PostType | undefined = postRepository.getProductById(id);
 
       if (post) {
         res.status(200).send(getPostViewModel(post));
@@ -75,25 +73,24 @@ export const getPostsRoutes = () => {
    *************************************************/
   postRouter.post(
     "/",
-    (req: TypedBodyRequest<PostCreateModel>, res: Response<ViewModel[]>) => {
+    (req: TypedBodyRequest<PostCreateModel>, res: Response<ViewModel>) => {
       if (!req.body.title) {
         res.sendStatus(400);
         return;
       }
 
-      const newProduct: PostType = {
-        id: +new Date(),
-        userId: 1,
-        title: req.body.title,
-        body: req.body.body,
-        totalCount: 10,
-      };
-
-      posts.push(newProduct);
+      let post: PostType = postRepository.createPost(
+        req.body.title,
+        req.body.body
+      );
 
       // type PostType на выводе подгоняем под модель PostViewModel,
       // которая предназначена конкретно для вывода
-      res.status(200).json(posts.map(getPostViewModel));
+      //res.status(200).json(posts.map(getPostViewModel));
+
+      let modifiedPostForView: ViewModel = getPostViewModel(post);
+
+      res.status(200).json(modifiedPostForView);
     }
   );
 
@@ -108,12 +105,14 @@ export const getPostsRoutes = () => {
     ) => {
       const id = +req.params.id;
 
-      let post = posts.find((p) => p.id === id);
-      if (post) {
-        post.title = req.body.title;
-        post.body = req.body.body;
+      let updatedPost = postRepository.updatePost(
+        id,
+        req.body.title,
+        req.body.body
+      );
 
-        res.status(201).send(post);
+      if (updatedPost) {
+        res.status(201).send(updatedPost);
       } else {
         res.sendStatus(404);
       }
@@ -128,16 +127,13 @@ export const getPostsRoutes = () => {
     (req: TypedParamsRequest<GetParamModel>, res: Response) => {
       const id = +req.params.id;
 
-      //const deletedPost = posts.filter((p) => p.id !== id);
-      for (let i = 0; i < posts.length; i++) {
-        if (posts[i].id === id) {
-          posts.splice(i, 1);
-          res.status(204).send(posts);
-          return;
-        }
-      }
+      let posts = postRepository.deletePost(id);
 
-      res.send(404);
+      if (posts) {
+        res.send(204);
+      } else {
+        res.send(404);
+      }
     }
   );
 
