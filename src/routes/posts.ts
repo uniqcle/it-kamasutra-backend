@@ -1,4 +1,4 @@
-import express, { Request, Response, Express } from "express";
+import express, { Request, Response, Express, NextFunction } from "express";
 import { PostType } from "../fake_data/posts";
 import {
   TypedBodyRequest,
@@ -40,10 +40,18 @@ export const getPostsRoutes = () => {
 
   postRouter.get(
     "/",
+    (req: Request, res: Response, next: NextFunction) => {
+      //@ts-ignore
+      (req.blabla = "hello"), next();
+    },
+
     (req: TypedQueryRequest<{ title: string }>, res: Response<ViewModel[]>) => {
       const title = req.query.title?.toString();
 
       let filteredPosts = postRepository.filterPost(title);
+
+      //@ts-ignore
+      console.log(req.blabla);
 
       res.send(filteredPosts);
     }
