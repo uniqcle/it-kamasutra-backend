@@ -4,3 +4,7 @@ export type ViewModel = {
   title: string;
   body: string;
 };
+
+export type NoTitleResponse = {
+  message: string;
+};

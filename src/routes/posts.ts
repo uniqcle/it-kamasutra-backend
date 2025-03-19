@@ -8,9 +8,13 @@ import {
 } from "../types";
 import { PostCreateModel } from "../models/PostCreateModel";
 import { GetParamModel } from "../models/GetParamModel";
-import { ViewModel } from "../models/PostViewModel";
+import { ViewModel, NoTitleResponse } from "../models/PostViewModel";
 import { getPostViewModel } from "../utils/getPostViewModel";
 import { postRepository } from "../repositories/post_repos";
+
+import { updatePostValidateMiddleware } from "../validation/post";
+import { body, query, validationResult } from "express-validator";
+import { inputValidationMiddlware } from "../middlewares/inputValidationMiddlware";
 
 export const getPostsRoutes = () => {
   const postRouter = express.Router();
@@ -81,9 +85,24 @@ export const getPostsRoutes = () => {
    *************************************************/
   postRouter.post(
     "/",
-    (req: TypedBodyRequest<PostCreateModel>, res: Response<ViewModel>) => {
-      if (!req.body.title) {
-        res.sendStatus(400);
+    body("title")
+      .trim()
+      .isLength({ min: 3, max: 10 })
+      .withMessage("Заголовк не соответствует"),
+    (
+      req: TypedBodyRequest<PostCreateModel>,
+      res: Response<ViewModel | NoTitleResponse | { errors: {} }>
+    ) => {
+      // можно так по простому валидировать
+      // if (!req.body.title) {
+      //   res.status(400).send({ message: "title is required" });
+      //   return;
+      // }
+
+      const resultValidation = validationResult(req);
+
+      if (!resultValidation.isEmpty()) {
+        res.status(400).send({ errors: resultValidation.array() });
         return;
       }
 
@@ -107,6 +126,8 @@ export const getPostsRoutes = () => {
    *************************************************/
   postRouter.put(
     "/:id",
+    updatePostValidateMiddleware(),
+    inputValidationMiddlware,
     (
       req: TypedParamsBodyRequest<GetParamModel, PostCreateModel>,
       res: Response
