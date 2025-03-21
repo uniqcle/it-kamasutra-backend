@@ -49,10 +49,13 @@ export const getPostsRoutes = () => {
       (req.blabla = "hello"), next();
     },
 
-    (req: TypedQueryRequest<{ title: string }>, res: Response<ViewModel[]>) => {
+    async (
+      req: TypedQueryRequest<{ title: string }>,
+      res: Response<ViewModel[]>
+    ) => {
       const title = req.query.title?.toString();
 
-      let filteredPosts = postRepository.filterPost(title);
+      let filteredPosts: PostType[] = await postRepository.filterPost(title);
 
       //@ts-ignore
       console.log(req.blabla);
@@ -64,13 +67,13 @@ export const getPostsRoutes = () => {
   // by id
   postRouter.get(
     "/:id",
-    (
+    async (
       req: TypedParamsRequest<{ id: string }>,
       res: Response<ViewModel | number>
     ) => {
       const id = +req.params.id;
 
-      let post: PostType | undefined = postRepository.getProductById(id);
+      let post: PostType | undefined = await postRepository.getProductById(id);
 
       if (post) {
         res.status(200).send(getPostViewModel(post));
@@ -89,7 +92,7 @@ export const getPostsRoutes = () => {
       .trim()
       .isLength({ min: 3, max: 10 })
       .withMessage("Заголовк не соответствует"),
-    (
+    async (
       req: TypedBodyRequest<PostCreateModel>,
       res: Response<ViewModel | NoTitleResponse | { errors: {} }>
     ) => {
@@ -106,7 +109,7 @@ export const getPostsRoutes = () => {
         return;
       }
 
-      let post: PostType = postRepository.createPost(
+      let post: Promise<PostType> = postRepository.createPost(
         req.body.title,
         req.body.body
       );
@@ -115,7 +118,7 @@ export const getPostsRoutes = () => {
       // которая предназначена конкретно для вывода
       //res.status(200).json(posts.map(getPostViewModel));
 
-      let modifiedPostForView: ViewModel = getPostViewModel(post);
+      let modifiedPostForView: ViewModel = getPostViewModel(await post);
 
       res.status(200).json(modifiedPostForView);
     }

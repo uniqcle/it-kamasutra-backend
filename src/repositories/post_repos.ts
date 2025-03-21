@@ -1,7 +1,7 @@
 import { PostType, posts } from "../fake_data/posts";
 
 export const postRepository = {
-  filterPost(title: string | null) {
+  async filterPost(title: string | null): Promise<PostType[]> {
     if (title) {
       const filteredPosts = posts.filter((p) => p.title.includes(title));
       return filteredPosts;
@@ -10,12 +10,14 @@ export const postRepository = {
     }
   },
 
-  getProductById(id: number) {
-    return posts.find((p) => p.id == id);
+  async getProductById(id: number): Promise<PostType | undefined> {
+    const post = posts.find((p) => p.id == id);
+
+    return post;
   },
 
-  createPost(title: string, body: string) {
-    const newProduct: PostType = {
+  async createPost(title: string, body: string): Promise<PostType> {
+    const newPost: PostType = {
       id: +new Date(),
       userId: 1,
       title: title,
@@ -23,7 +25,9 @@ export const postRepository = {
       totalCount: 10,
     };
 
-    return newProduct;
+    posts.push(newPost);
+
+    return newPost;
   },
 
   updatePost(id: number, title: string, body: string) {
@@ -43,9 +47,9 @@ export const postRepository = {
     for (let i = 0; i < posts.length; i++) {
       if (posts[i].id === id) {
         posts.splice(i, 1);
-        return posts
+        return posts;
       }
     }
-    return false; 
-  }
+    return false;
+  },
 };
