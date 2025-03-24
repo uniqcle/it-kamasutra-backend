@@ -1,5 +1,6 @@
 type PostType = {
-  id: number;
+  _id?: string;
+  id: string | number;
   userId: number;
   title: string;
   body: string;
@@ -8,6 +9,7 @@ type PostType = {
 
 const posts: PostType[] = [
   {
+    _id: "67e0ca1775769c2f4d67ddf2",
     userId: 1,
     id: 1,
     title:
@@ -16,6 +18,7 @@ const posts: PostType[] = [
     totalCount: 10,
   },
   {
+    _id: "67e0ca2f75769c2f4d67ddf3",
     userId: 1,
     id: 2,
     title: "qui est esse",

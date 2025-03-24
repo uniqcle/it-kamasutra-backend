@@ -10,10 +10,10 @@ import { PostCreateModel } from "../models/PostCreateModel";
 import { GetParamModel } from "../models/GetParamModel";
 import { ViewModel, NoTitleResponse } from "../models/PostViewModel";
 import { getPostViewModel } from "../utils/getPostViewModel";
-import { postRepository } from "../repositories/post_repos";
+import { postRepository } from "../repositories/post_db";
 
 import { updatePostValidateMiddleware } from "../validation/post";
-import { body, query, validationResult } from "express-validator";
+import { body, validationResult } from "express-validator";
 import { inputValidationMiddlware } from "../middlewares/inputValidationMiddlware";
 
 export const getPostsRoutes = () => {
@@ -58,7 +58,7 @@ export const getPostsRoutes = () => {
       let filteredPosts: PostType[] = await postRepository.filterPost(title);
 
       //@ts-ignore
-      console.log(req.blabla);
+      console.log(filteredPosts);
 
       res.send(filteredPosts);
     }
@@ -69,11 +69,11 @@ export const getPostsRoutes = () => {
     "/:id",
     async (
       req: TypedParamsRequest<{ id: string }>,
-      res: Response<ViewModel | number>
+      res: Response<ViewModel | number | null>
     ) => {
-      const id = +req.params.id;
+      const id = req.params.id;
 
-      let post: PostType | undefined = await postRepository.getProductById(id);
+      let post: PostType | null = await postRepository.getProductById(id);
 
       if (post) {
         res.status(200).send(getPostViewModel(post));
@@ -90,7 +90,7 @@ export const getPostsRoutes = () => {
     "/",
     body("title")
       .trim()
-      .isLength({ min: 3, max: 10 })
+      .isLength({ min: 3, max: 100 })
       .withMessage("Заголовк не соответствует"),
     async (
       req: TypedBodyRequest<PostCreateModel>,
@@ -109,7 +109,7 @@ export const getPostsRoutes = () => {
         return;
       }
 
-      let post: Promise<PostType> = postRepository.createPost(
+      let post: PostType | null = await postRepository.createPost(
         req.body.title,
         req.body.body
       );
@@ -118,9 +118,9 @@ export const getPostsRoutes = () => {
       // которая предназначена конкретно для вывода
       //res.status(200).json(posts.map(getPostViewModel));
 
-      let modifiedPostForView: ViewModel = getPostViewModel(await post);
+      let modifiedPostForView: ViewModel | null = getPostViewModel(post);
 
-      res.status(200).json(modifiedPostForView);
+      res.status(200).json({ message: "Данные созданы" });
     }
   );
 
@@ -131,20 +131,20 @@ export const getPostsRoutes = () => {
     "/:id",
     updatePostValidateMiddleware(),
     inputValidationMiddlware,
-    (
+    async (
       req: TypedParamsBodyRequest<GetParamModel, PostCreateModel>,
       res: Response
     ) => {
-      const id = +req.params.id;
+      const id = req.params.id;
 
-      let updatedPost = postRepository.updatePost(
+      let result = await postRepository.updatePost(
         id,
         req.body.title,
         req.body.body
       );
 
-      if (updatedPost) {
-        res.status(201).send(updatedPost);
+      if (result) {
+        res.status(201).send("Post updated");
       } else {
         res.sendStatus(404);
       }
@@ -156,12 +156,12 @@ export const getPostsRoutes = () => {
    *************************************************/
   postRouter.delete(
     "/:id",
-    (req: TypedParamsRequest<GetParamModel>, res: Response) => {
-      const id = +req.params.id;
+    async (req: TypedParamsRequest<GetParamModel>, res: Response) => {
+      const id = req.params.id;
 
-      let posts = postRepository.deletePost(id);
+      let result = await postRepository.deletePost(id);
 
-      if (posts) {
+      if (result) {
         res.send(204);
       } else {
         res.send(404);

@@ -1,5 +1,6 @@
 export type ViewModel = {
-  id: number;
+  _id?: string;
+  id: string | number;
   userId: number;
   title: string;
   body: string;
