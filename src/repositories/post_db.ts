@@ -17,27 +17,16 @@ export const postRepository = {
   },
 
   async getProductById(id: number | string): Promise<PostType | null> {
-    let post = await postCollection.findOne({ id: id });
+    let post: PostType | null = await postCollection.findOne({ id: id });
 
-    if (post) {
-      return post;
-    } else {
-      return null;
-    }
+    return post; 
 
     // const post = posts.find((p) => p.id == id);
     // return post;
   },
 
-  async createPost(title: string, body: string): Promise<PostType | null> {
-    const newPost: PostType = {
-      id: +new Date(),
-      userId: 1,
-      title: title,
-      body: body,
-      totalCount: 10,
-    };
-
+  async createPost(newPost: PostType): Promise<PostType | null> {
+    
     let result = await postCollection.insertOne(newPost);
 
     if (result.insertedId) {

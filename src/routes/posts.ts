@@ -10,11 +10,13 @@ import { PostCreateModel } from "../models/PostCreateModel";
 import { GetParamModel } from "../models/GetParamModel";
 import { ViewModel, NoTitleResponse } from "../models/PostViewModel";
 import { getPostViewModel } from "../utils/getPostViewModel";
-import { postRepository } from "../repositories/post_db";
+
 
 import { updatePostValidateMiddleware } from "../validation/post";
 import { body, validationResult } from "express-validator";
 import { inputValidationMiddlware } from "../middlewares/inputValidationMiddlware";
+
+import { postService } from "../domain/postService";
 
 export const getPostsRoutes = () => {
   const postRouter = express.Router();
@@ -55,7 +57,7 @@ export const getPostsRoutes = () => {
     ) => {
       const title = req.query.title?.toString();
 
-      let filteredPosts: PostType[] = await postRepository.filterPost(title);
+      let filteredPosts: PostType[] = await postService.filterPost(title);
 
       //@ts-ignore
       console.log(filteredPosts);
@@ -73,7 +75,7 @@ export const getPostsRoutes = () => {
     ) => {
       const id = req.params.id;
 
-      let post: PostType | null = await postRepository.getProductById(id);
+      let post: PostType | null = await postService.getProductById(id);
 
       if (post) {
         res.status(200).send(getPostViewModel(post));
@@ -109,7 +111,7 @@ export const getPostsRoutes = () => {
         return;
       }
 
-      let post: PostType | null = await postRepository.createPost(
+      let post: PostType | null = await postService.createPost(
         req.body.title,
         req.body.body
       );
@@ -137,7 +139,7 @@ export const getPostsRoutes = () => {
     ) => {
       const id = req.params.id;
 
-      let result = await postRepository.updatePost(
+      let result = await postService.updatePost(
         id,
         req.body.title,
         req.body.body
@@ -159,7 +161,7 @@ export const getPostsRoutes = () => {
     async (req: TypedParamsRequest<GetParamModel>, res: Response) => {
       const id = req.params.id;
 
-      let result = await postRepository.deletePost(id);
+      let result = await postService.deletePost(id);
 
       if (result) {
         res.send(204);
