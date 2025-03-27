@@ -1,5 +1,6 @@
 import { MongoClient } from "mongodb";
 import { PostType } from "../fake_data/posts";
+import { UserDbType } from "../types/user";
 
 const mongoUri =
   process.env.DB_CONNECT || "mongodb://admin:secret@localhost:27017/";
@@ -7,6 +8,8 @@ const mongoUri =
 export const client = new MongoClient(mongoUri);
 const db = client.db("learning");
 export const postCollection = db.collection<PostType>("posts");
+export const userCollection = db.collection<UserDbType>("users");
+
 
 export async function runDb() {
   try {
