@@ -1,8 +1,9 @@
 import express from "express";
-import { getPostsRoutes } from './routes/posts';
-import { getTestRouter } from './routes/test_endpoint'; 
+import { getPostsRoutes } from "./routes/posts";
 import { getUsersRoutes } from "./routes/users";
 import { authRouter } from "./routes/auth";
+import { feedbackRouter } from "./routes/feedback";
+import { getTestRouter } from "./routes/test_endpoint";
 
 export const app = express();
 
@@ -12,8 +13,9 @@ const postRouter = getPostsRoutes();
 const userRouter = getUsersRoutes();
 
 app.use("/posts", postRouter);
-app.use("/users", userRouter);
-app.use("/login", authRouter); 
+app.use("/register", userRouter);
+app.use("/login", authRouter);
+app.use("/feedback", feedbackRouter);
 
 
 getTestRouter(app); 

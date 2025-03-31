@@ -4,15 +4,14 @@ import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
 
 export const userService = {
-	
-  async createPost(user: UserRequestType): Promise<UserDbType | null> {
+  async registerUser(user: UserRequestType): Promise<UserDbType | null> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generateHash(user.password, passwordSalt);
 
     console.log(passwordSalt);
 
     const newUser: UserDbType = {
-      // _id: new ObjectId() as unknown,
+      _id: new ObjectId(),
       userName: user.login,
       email: user.email,
       passwordHash,
@@ -33,16 +32,26 @@ export const userService = {
     return hash;
   },
 
+  // Проверка логина (или почты, если логин почта)
   async checkCredentials(loginOrEmail: string, password: string) {
     const user = await userRepository.findByLoginOrEmail(loginOrEmail);
 
+    // Если пользователя нет - отдаем false
     if (!user) return false;
+
+    // Если есть пользователь, генерируем hash
     const passwordHash = await this._generateHash(password, user.passwordSalt);
 
     if (user.passwordHash !== passwordHash) {
       return false;
     }
 
-    return true;
+    return user;
+  },
+
+  async findUserById(userId: string) {
+    console.log("ID пользователя: ", userId);
+
+    return userRepository.findUserById(userId);
   },
 };
